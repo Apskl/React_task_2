@@ -1,80 +1,63 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import styles from './App.module.css';
 
+const schema = yup.object().shape({
+	email: yup.string().email('Неверный формат Email').required('Введите Email'),
+	password: yup
+		.string()
+		.matches(/^[a-zA-Z0-9_]+$/, 'Пароль может содержать только буквы, цифры и нижнее подчеркивание')
+		.min(3, 'Пароль должен содержать минимум 3 символа')
+		.max(20, 'Пароль должен содержать максимум 20 символов')
+		.required('Введите пароль'),
+	confirmPassword: yup
+		.string()
+		.oneOf([yup.ref('password'), null], 'Пароли должны совпадать')
+		.required('Повторите пароль'),
+});
+
 const App = () => {
-	const [formData, setFormData] = useState({
-		email: '',
-		password: '',
-		confirmPassword: '',
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm({
+		resolver: yupResolver(schema),
 	});
-	const [errors, setErrors] = useState({});
-	const [formValid, setFormValid] = useState(false);
+
 	const registerButtonRef = useRef(null);
 
 	useEffect(() => {
-		const formErrors = {};
-		let valid = true;
-
-		if (!formData.email) {
-			formErrors.email = 'Введите Email';
-			valid = false;
-		}
-
-		if (!formData.password) {
-			formErrors.password = 'Введите пароль';
-			valid = false;
-		} else if (formData.password.length < 3 || formData.password.length > 20) {
-			formErrors.password = 'Пароль должен содержать от 3 до 20 символов';
-			valid = false;
-		} else if (!/^[a-zA-Z0-9_]+$/.test(formData.password)) {
-			formErrors.password = 'Пароль может содержать только буквы, цифры и нижнее подчеркивание';
-			valid = false;
-		}
-
-		if (formData.password !== formData.confirmPassword) {
-			formErrors.confirmPassword = 'Пароли не совпадают';
-			valid = false;
-		}
-
-		setErrors(formErrors);
-		setFormValid(valid);
-	}, [formData]);
-
-	const handleInputChange = (event) => {
-		const { name, value } = event.target;
-		setFormData({ ...formData, [name]: value });
-	};
-
-	const handleSubmit = (event) => {
-		event.preventDefault();
-		console.log(formData);
-	};
-
-	useEffect(() => {
-		if (formValid) {
+		if (Object.keys(errors).length === 0) {
 			registerButtonRef.current.focus();
 		}
-	}, [formValid]);
+	}, [errors]);
+
+	const onSubmit = (data) => {
+		console.log(data);
+	};
 
 	return (
 		<div className={styles.container}>
-			<form className={styles.form} onSubmit={handleSubmit}>
+			<form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
 				<div className={styles.formGroup}>
 					<label>Email:</label>
-					<input type="email" name="email" value={formData.email} onChange={handleInputChange} className={styles.input} />
-					{errors.email && <p className={styles.error}>{errors.email}</p>}
+					<input type="email" {...register('email')} className={styles.input} />
+					{errors.email && <p className={styles.error}>{errors.email.message}</p>}
 				</div>
 				<div className={styles.formGroup}>
 					<label>Пароль:</label>
-					<input type="password" name="password" value={formData.password} onChange={handleInputChange} className={styles.input} />
-					{errors.password && <p className={styles.error}>{errors.password}</p>}
+					<input type="password" {...register('password')} className={styles.input} />
+					{errors.password && <p className={styles.error}>{errors.password.message}</p>}
 				</div>
 				<div className={styles.formGroup}>
 					<label>Повторите пароль:</label>
-					<input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} className={styles.input} />
-					{errors.confirmPassword && <p className={styles.error}>{errors.confirmPassword}</p>}
+					<input type="password" {...register('confirmPassword')} className={styles.input} />
+					{errors.confirmPassword && <p className={styles.error}>{errors.confirmPassword.message}</p>}
 				</div>
-				<button type="submit" className={styles.button} disabled={!formValid} ref={registerButtonRef}>
+				<button type="submit" className={styles.button} ref={registerButtonRef}>
 					Зарегистрироваться
 				</button>
 			</form>
