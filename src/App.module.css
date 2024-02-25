@@ -1,53 +1,49 @@
-.calculator {
-	width: 300px;
-	margin: 50px auto;
-	background-color: #f3f3f3;
-	border-radius: 10px;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-	padding: 20px;
-}
-
-.display {
-	display: flex;
-	align-items: center;
-	border: 1px solid #0002;
-	border-radius: 8px;
-	height: 40px;
-	margin-bottom: 8px;
-	padding-inline: 8px;
-	font-size: 1.75rem;
-	overflow: hidden;
-	text-wrap: nowrap;
-}
-
-.display.result {
-	background-color: #08ad68;
-}
-
-.buttons {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	grid-gap: 10px;
-}
-
-body {
-	background-color: antiquewhite;
+/* App.css */
+.App {
+	font-family: Arial, sans-serif;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 98vh;
+	height: 100vh;
+}
+
+form {
+	border: 1px solid #ccc;
+	padding: 20px;
+	border-radius: 5px;
+}
+
+div {
+	margin-bottom: 10px;
+}
+
+label {
+	display: block;
+	margin-bottom: 5px;
+}
+
+input[type='email'],
+input[type='password'] {
+	width: 100%;
+	padding: 8px;
+	border-radius: 3px;
+	border: 1px solid #ccc;
+}
+
+.error {
+	color: red;
 }
 
 button {
-	padding: 15px;
-	font-size: 20px;
+	background-color: #4caf50;
+	color: white;
 	border: none;
-	background-color: #f0f0f0;
-	border-radius: 5px;
+	padding: 10px 20px;
+	border-radius: 3px;
 	cursor: pointer;
-	transition: background-color 0.3s ease;
 }
 
-button:hover {
-	background-color: #59c2ce;
+button:disabled {
+	background-color: #ccc;
+	cursor: not-allowed;
 }

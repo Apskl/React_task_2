@@ -1,72 +1,83 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styles from './App.module.css';
 
 const App = () => {
-	const [operand1, setOperand1] = useState('');
-	const [operator, setOperator] = useState('');
-	const [operand2, setOperand2] = useState('');
-	const [isResult, setIsResult] = useState(false);
+	const [formData, setFormData] = useState({
+		email: '',
+		password: '',
+		confirmPassword: '',
+	});
+	const [errors, setErrors] = useState({});
+	const [formValid, setFormValid] = useState(false);
+	const registerButtonRef = useRef(null);
 
-	const NUMS = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0'];
+	useEffect(() => {
+		const formErrors = {};
+		let valid = true;
 
-	const clickOnNumber = (number) => {
-		if (isResult) {
-			setOperand1('');
-			setOperator('');
-			setOperand2('');
-			setIsResult(false);
+		if (!formData.email) {
+			formErrors.email = 'Введите Email';
+			valid = false;
 		}
-		if (!operator) {
-			if (!(operand1 === '0' && number === '0')) {
-				setOperand1(operand1 === '0' ? number : operand1 + number);
-			}
-		} else {
-			if (!(operand2 === '0' && number === '0')) {
-				setOperand2(operand2 === '0' ? number : operand2 + number);
-			}
+
+		if (!formData.password) {
+			formErrors.password = 'Введите пароль';
+			valid = false;
+		} else if (formData.password.length < 3 || formData.password.length > 20) {
+			formErrors.password = 'Пароль должен содержать от 3 до 20 символов';
+			valid = false;
+		} else if (!/^[a-zA-Z0-9_]+$/.test(formData.password)) {
+			formErrors.password = 'Пароль может содержать только буквы, цифры и нижнее подчеркивание';
+			valid = false;
 		}
+
+		if (formData.password !== formData.confirmPassword) {
+			formErrors.confirmPassword = 'Пароли не совпадают';
+			valid = false;
+		}
+
+		setErrors(formErrors);
+		setFormValid(valid);
+	}, [formData]);
+
+	const handleInputChange = (event) => {
+		const { name, value } = event.target;
+		setFormData({ ...formData, [name]: value });
 	};
 
-	const mathOperations = (mathOp) => {
-		if (mathOp === 'C') {
-			setOperand1('');
-			setOperator('');
-			setOperand2('');
-			setIsResult(false);
-		} else if (mathOp === '+' || mathOp === '-') {
-			setOperator(mathOp);
-		} else if (mathOp === '=') {
-			let result;
-			const num1 = parseInt(operand1);
-			const num2 = parseInt(operand2);
-			if (operator === '+') {
-				result = num1 + num2;
-			} else if (operator === '-') {
-				result = num1 - num2;
-			}
-			setOperand1(result.toString());
-			setOperator('');
-			setOperand2('');
-			setIsResult(true);
-		}
+	const handleSubmit = (event) => {
+		event.preventDefault();
+		console.log(formData);
 	};
+
+	useEffect(() => {
+		if (formValid) {
+			registerButtonRef.current.focus();
+		}
+	}, [formValid]);
 
 	return (
-		<div className={styles.calculator}>
-			<div className={`${styles.display} ${isResult ? styles.result : ''}`}>
-				{operand1} {operator} {operand2}
-			</div>
-			<div className={styles.buttons}>
-				{NUMS.map((number) => (
-					<button key={number} onClick={() => clickOnNumber(number)}>
-						{number}
-					</button>
-				))}
-				<button onClick={() => mathOperations('+')}>+</button>
-				<button onClick={() => mathOperations('-')}>-</button>
-				<button onClick={() => mathOperations('=')}>=</button>
-				<button onClick={() => mathOperations('C')}>C</button>
-			</div>
+		<div className={styles.container}>
+			<form className={styles.form} onSubmit={handleSubmit}>
+				<div className={styles.formGroup}>
+					<label>Email:</label>
+					<input type="email" name="email" value={formData.email} onChange={handleInputChange} className={styles.input} />
+					{errors.email && <p className={styles.error}>{errors.email}</p>}
+				</div>
+				<div className={styles.formGroup}>
+					<label>Пароль:</label>
+					<input type="password" name="password" value={formData.password} onChange={handleInputChange} className={styles.input} />
+					{errors.password && <p className={styles.error}>{errors.password}</p>}
+				</div>
+				<div className={styles.formGroup}>
+					<label>Повторите пароль:</label>
+					<input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} className={styles.input} />
+					{errors.confirmPassword && <p className={styles.error}>{errors.confirmPassword}</p>}
+				</div>
+				<button type="submit" className={styles.button} disabled={!formValid} ref={registerButtonRef}>
+					Зарегистрироваться
+				</button>
+			</form>
 		</div>
 	);
 };
