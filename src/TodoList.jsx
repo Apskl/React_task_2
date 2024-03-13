@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import styles from './App.module.css';
+import { db } from './firebase.jsx';
+import { ref, onValue, push, remove } from 'firebase/database';
 
 function App() {
 	const [todos, setTodos] = useState([]);
@@ -8,30 +10,25 @@ function App() {
 	const [sortByAlphabet, setSortByAlphabet] = useState(false);
 
 	useEffect(() => {
-		fetch('http://localhost:3001/todos')
-			.then((response) => response.json())
-			.then((data) => setTodos(data))
-			.catch((error) => console.log('error', error));
+		const todosRef = ref(db, 'todos');
+		onValue(todosRef, (snapshot) => {
+			const data = snapshot.val();
+			if (data) {
+				const todoList = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
+				setTodos(todoList);
+			} else {
+				setTodos([]);
+			}
+		});
 	}, []);
 
 	const addTodo = async () => {
-		const response = await fetch('http://localhost:3001/todos', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ title: newTodo }),
-		});
-		const data = await response.json();
-		setTodos([...todos, data]);
+		await push(ref(db, 'todos'), { title: newTodo });
 		setNewTodo('');
 	};
 
 	const deleteTodo = async (id) => {
-		await fetch(`http://localhost:3001/todos/${id}`, {
-			method: 'DELETE',
-		});
-		setTodos(todos.filter((todo) => todo.id !== id));
+		await remove(ref(db, `todos/${id}`));
 	};
 
 	const handleSearch = (event) => {
